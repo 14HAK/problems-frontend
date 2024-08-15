@@ -39,7 +39,27 @@
 
 
 ```
+## React Functional Component:
+```javascript
+import React from 'react';
 
+type TNAME = string;
+
+interface AppProps {
+  name: TNAME;
+}
+
+const App: React.FC<AppProps> = ({ name }) => {
+  return (
+    <div>
+      <h1>Hello, World!</h1>
+      <p>{name}</p>
+    </div>
+  );
+};
+
+export default App;
+```
 
 
 
