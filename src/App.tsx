@@ -1,7 +1,8 @@
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css';
-import UseRefComponent from './components/useRefComponent';
+// import UnionTypeComponent from './components/UnionTypeComponent';
+// import UseRefComponent from './components/useRefComponent';
 // import FormEventHandlers from './components/FormEventHandlers';
 // import EventHandlers from './components/EventHandlers';
 
@@ -23,7 +24,8 @@ function App(): JSX.Element {
       {/* <GenericCom items={names} render={(item)=> <span>{item}</span> } /> */}
       {/* <EventHandlers /> */}
       {/* <FormEventHandlers /> */}
-      <UseRefComponent />
+      {/* <UseRefComponent /> */}
+      {/* <UnionTypeComponent person={{ role: 'user', userName: 'satosi' }} /> */}
     </div>
   );
 }
