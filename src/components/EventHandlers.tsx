@@ -1,20 +1,17 @@
 import React, { MouseEvent } from 'react';
 
 const EventHandlers: React.FC = () => {
-  const handleEvent = (
-    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
-  ) => {
-    event.preventDefault();
-    console.log('event triggered');
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    console.log('Button clicked!', event.currentTarget);
   };
 
   return (
     <>
       <div>
-        <p>event controll component</p>
+        <p>event control component</p>
         <button
           className='py-2 px-5 bg-red-800 text-white hover:bg-red-600 rounded-md'
-          onClick={() => handleEvent()}
+          onClick={handleClick}
         >
           click me
         </button>

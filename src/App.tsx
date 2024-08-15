@@ -1,6 +1,8 @@
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css';
+import UseRefComponent from './components/useRefComponent';
+// import FormEventHandlers from './components/FormEventHandlers';
 // import EventHandlers from './components/EventHandlers';
 
 // import { useState } from 'react';
@@ -8,7 +10,6 @@ import './App.css';
 
 // import BasicPropsTyping from './components/BasicPropsTyping';
 // import Demo from './components/Demo';
-
 
 function App(): JSX.Element {
   // const [names] = useState<string[]>(['Dulon','Kanan', 'Nitu']);
@@ -21,6 +22,8 @@ function App(): JSX.Element {
       {/* <BasicPropsTyping key={125} data={{ name: 'Dulon Mahadi', age: 30 }} /> */}
       {/* <GenericCom items={names} render={(item)=> <span>{item}</span> } /> */}
       {/* <EventHandlers /> */}
+      {/* <FormEventHandlers /> */}
+      <UseRefComponent />
     </div>
   );
 }
