@@ -1,18 +1,17 @@
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import { useState } from 'react';
 import './App.css';
-import GenericCom from './components/GenericCom';
+// import EventHandlers from './components/EventHandlers';
+
+// import { useState } from 'react';
+// import GenericCom from './components/GenericCom';
+
 // import BasicPropsTyping from './components/BasicPropsTyping';
 // import Demo from './components/Demo';
 
 
 function App(): JSX.Element {
-  const [names] = useState<string[]>([
-    'Dulon mahadi molla',
-    'Kanan mahadi molla',
-    'Nusrat jahan nitu',
-  ]);
+  // const [names] = useState<string[]>(['Dulon','Kanan', 'Nitu']);
 
   return (
     <div>
@@ -20,7 +19,8 @@ function App(): JSX.Element {
       <hr />
       {/* <Demo key={'125'} name='khalifa' /> */}
       {/* <BasicPropsTyping key={125} data={{ name: 'Dulon Mahadi', age: 30 }} /> */}
-      <GenericCom items={names} render={(item) => <span>{item}</span>} />
+      {/* <GenericCom items={names} render={(item)=> <span>{item}</span> } /> */}
+      {/* <EventHandlers /> */}
     </div>
   );
 }
