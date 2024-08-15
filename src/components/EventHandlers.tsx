@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 
 const EventHandlers: React.FC = () => {
-  const handleEvent = () => {
+  const handleEvent = (
+    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    event.preventDefault();
     console.log('event triggered');
   };
 
