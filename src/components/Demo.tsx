@@ -1,17 +1,17 @@
 import React from 'react';
-
-type TNAME = string;
+type Tname = string;
 
 interface DemoProps {
-  name: TNAME;
+  name: Tname;
 }
-
-const Demo: React.FC = ({ name }) => {
+const Demo: React.FC<DemoProps> = ({ name }) => {
   return (
-    <div>
-      <h2>this is functional component</h2>
-      <p>{name}</p>
-    </div>
+    <>
+      <div>
+        <h2 className='text-2xl'>demo component here</h2>
+        <p>{name}</p>
+      </div>
+    </>
   );
 };
 

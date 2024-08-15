@@ -43,22 +43,30 @@
 ```javascript
 import React from 'react';
 
-type TNAME = string;
-
-interface AppProps {
-  name: TNAME;
+interface TDATA {
+  name: string;
+  age?: number;
 }
 
-const App: React.FC<AppProps> = ({ name }) => {
+interface TBASICPROPS {
+  data: TDATA;
+}
+
+const BasicPropsTyping: React.FC<TBASICPROPS> = ({ data }) => {
+  const { name, age } = data;
   return (
     <div>
-      <h1>Hello, World!</h1>
-      <p>{name}</p>
+      <p>hello, {name}</p>
+      <p>age is: {age}</p>
     </div>
   );
 };
 
-export default App;
+export default BasicPropsTyping;
+
+// Pass the props
+-----------------
+<BasicPropsTyping data={{ name: 'kanij fatema', age: 30 }} />
 ```
 
 
