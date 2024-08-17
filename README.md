@@ -6,6 +6,8 @@
   npm install -D tailwindcss postcss autoprefixer
   npx tailwindcss init -p
 
+  npm install react-router-dom // react router dom
+
 // tailwind.config.js
 ---------------------
   /** @type {import('tailwindcss').Config} */
@@ -208,10 +210,230 @@
 
 ## Higher-Order Components:
 ```javascript
-// useState()
--------------
-  const 
+// Higher-Order Components (HOCs) are a pattern in React that allows you to reuse component logic.
+  পরে পূরণ করতে হবে...
 ```
+
+## Code Splitting and Lazy Loading:
+```javascript
+  // random component Random.jsx
+  const Loading: React.FC = () => <div>my component ingredients</div>;
+
+  // App.jsx
+  const Random = lazy(() => import('./Random'));
+
+  <Suspense fallback={<p>loading...</p>}>
+    <Random/>
+  </Suspense>
+```
+
+## React Router:
+```javascript
+// Routing
+----------
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Home />,
+    },
+    {
+      path: "/about",
+      element: <About />,
+    },
+    {
+      path: "/dashboard",
+      element: <Dashboard />,
+      children: [
+        {
+          path: "profile",
+          element: <Profile />,
+        },
+        {
+          path: "settings",
+          element: <Settings />,
+        },
+      ],
+    },
+    {
+      path: "*",
+      element: <NotFound />,
+    },
+  ]);
+  
+// Navigation
+-------------
+  <Link to="/">Profile</Link>
+  <Link to="/about">Profile</Link>
+  <Link to="profile">Profile</Link>
+  <Link to="settings">Settings</Link>
+  
+// Lazy Loading
+---------------
+  const Home = React.lazy(() => import('./pages/Home'));
+  
+  {
+    path: "/",
+    element: <Suspense fallback={<div>Loading...</div>}> <Home/> </Suspense>, // in react router
+  }
+
+// Dynamic Route
+----------------
+  const router = createBrowserRouter([
+    // Other routes...
+    {
+      path: "/user/:id",
+      element: <User />,
+    },
+  ]);
+
+  // get the dynamic params id
+  <h3>User ID: {id}</h3>
+  const { id } = useParams<{ id: string }>();
+
+// Query Parameters [Search]
+----------------------------
+  const router = createBrowserRouter([
+    // Other routes...
+    {
+      path: "/search",
+      element: <Search />,
+    },
+  ]);
+
+  // get the dynamic search query
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('query');
+
+  <p>Search Query: {query}</p>
+  <button onClick={() => setSearchParams({ query: 'react' })}>
+```
+
+## Redirects and Navigation:
+```javascript
+// RedirectDemo.tsx
+-------------------
+  const RedirectDemo = () => {
+    const shouldRedirect = true;
+    if (shouldRedirect) {
+      return <Navigate to="/dashboard" />;
+    }
+    return <h3>No Redirect</h3>;
+  };
+```
+
+## Programmatic Navigation:
+```javascript
+  const navigate = useNavigate();
+  <button onClick={() => navigate('/about')}>Go to About</button>
+```
+## Scroll Restoration:
+```javascript
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+```
+
+## Protected Routes:
+```javascript
+// ProtectedRoute.tsx
+---------------------
+  import { Navigate } from 'react-router-dom';
+  const ProtectedRoute = ({ isAuthenticated, children }: { isAuthenticated: boolean, children: JSX.Element }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" />;
+    }
+    return children;
+  };
+  export default ProtectedRoute;
+
+// in react router
+------------------
+   {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute isAuthenticated={isAuthenticated = false}>
+        <Dashboard/>
+      </ProtectedRoute>
+   }
+```
+
+## Route Guards:
+```javascript
+// RoleGuard.tsx
+---------------------
+  import { Navigate } from 'react-router-dom';
+  const RoleGuard = ({ role, allowedRoles, children }: { role: string, allowedRoles: string[], children: JSX.Element }) => {
+    if (!allowedRoles.includes(role)) {
+      return <Navigate to="/unauthorized" />;
+    }
+    return children;
+  };
+  export default RoleGuard;
+
+// in react router
+------------------
+  {
+    path: "/admin",
+    element: (
+      <RoleGuard role={userRole} allowedRoles={['admin']}>
+        <AdminPage />
+      </RoleGuard>
+    ),
+  },
+```
+
+## Layout Components:
+```javascript
+// Layout.tsx
+--------------
+  const Layout = () => {
+    return (
+      <div>
+        <header>Header</header>
+        <main>
+          <Outlet />
+        </main>
+        <footer>Footer</footer>
+      </div>
+      );
+    }
+
+// in react router
+------------------
+   const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Layout />,
+      children: [
+        { path: "/", element: <Home /> },
+        { path: "about", element: <About /> },
+        // Other routes...
+      ],
+    },
+  ]);
+```
+
+
+
+
+## React-router-dom [ Keywords ]:
+```javascript
+  createBrowserRouter
+  path
+  element
+  children
+
+  useParams
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { pathname } = useLocation();
+  <Navigate to="/dashboard" />
+  <Link to="/about">Profile</Link>
+  useNavigate()
+  <Outlet />
+```
+
 
 <!-- ## api end points:
 ```javascript
