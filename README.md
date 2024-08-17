@@ -1,12 +1,15 @@
-## vite + tailwind +:
+# Project Setup::
+## vite + tailwind + React-router-dom + ReduxToolkit & RTK query:
 ```javascript
   npm create vite@latest // vite
 
-  npm install -g tailwindcss // tailwindcss
+  npm install -g tailwindcss //tailwindCss
   npm install -D tailwindcss postcss autoprefixer
   npx tailwindcss init -p
 
-  npm install react-router-dom // react router dom
+  npm install react-router-dom //react router dom
+
+  npm install @reduxjs/toolkit react-redux //redux toolkit & RTK query
 
 // tailwind.config.js
 ---------------------
@@ -37,10 +40,8 @@
 // CMD
 ------
   npm run dev
-
-
-
 ```
+# Basic React::
 ## React Functional Component:
 ```javascript
   import React from 'react';
@@ -71,8 +72,6 @@
   <BasicPropsTyping data={{ name: 'kanij fatema', age: 30 }} />
 ```
 
-
-
 ## Mapped and Conditional Types:
 ```javascript
   interface Person 
@@ -97,8 +96,6 @@
   type Test1 = IsString<string>; // 'Yes'
   type Test2 = IsString<number>; // 'No'
 ```
-
-
 ## React Hooks:
 ```javascript
 // useState()
@@ -226,8 +223,8 @@
     <Random/>
   </Suspense>
 ```
-
-## React Router:
+# React Router Dom::
+## Router:
 ```javascript
 // Routing
 ----------
@@ -434,6 +431,197 @@
   <Outlet />
 ```
 
+# ReduxToolkit::
+## full setup:
+```javascript
+  Document: [REDUX](https://redux-toolkit.js.org/tutorials/typescript)
+  Document: [RTK](https://redux-toolkit.js.org/tutorials/typescript)
+```
+# Redux-Toolkit:
+## setup store:
+```javascript
+// redux/store.ts
+-----------------
+  import { configureStore } from '@reduxjs/toolkit';
+
+  export const store = configureStore({
+    reducer: {
+      posts: postsReducer,
+      comments: commentsReducer,
+      users: usersReducer,
+    },
+  })
+
+// .TS Types if don't use Redux extra Types hooks
+-------------------------------------------------
+  // Infer the `RootState` and `AppDispatch` types from the store itself
+  export type RootState = ReturnType<typeof store.getState>
+  // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+  export type AppDispatch = typeof store.dispatch
+```
+
+## .TS Types Hook:
+```javascript
+// redux/hooks.ts
+------------------
+  import { useDispatch, useSelector } from 'react-redux'
+  import type { RootState, AppDispatch } from './store'
+
+  // Use throughout your app instead of plain `useDispatch` and `useSelector`
+  export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+  export const useAppSelector = useSelector.withTypes<RootState>()
+```
+
+## Create Slice [ initialState ]:
+```javascript
+// redux/features/counterSlice.ts
+-----------------------------------------
+  import { createSlice } from '@reduxjs/toolkit'
+  import type { PayloadAction } from '@reduxjs/toolkit'
+  import type { RootState } from '../../app/store'
+
+  // Define a type for the slice state
+  interface CounterState {
+    value: number
+  }
+
+  // Define the initial state using that type
+  const initialState: CounterState = {
+    value: 0,
+  } satisfies CounterState as CounterState
+
+  export const counterSlice = createSlice({
+    name: 'counter',
+    // `createSlice` will infer the state type from the `initialState` argument
+    initialState,
+    reducers: {
+      increment: (state) => {
+        state.value += 1
+      },
+      decrement: (state) => {
+        state.value -= 1
+      },
+      // Use the PayloadAction type to declare the contents of `action.payload`
+      incrementByAmount: (state, action: PayloadAction<number>) => {
+        state.value += action.payload
+      },
+    },
+  })
+
+  export const { increment, decrement, incrementByAmount } = counterSlice.actions
+
+  // Other code such as selectors can use the imported `RootState` type
+  export const selectCount = (state: RootState) => state.counter.value
+  export default counterSlice.reducer
+```
+
+## Using State && Dispatch Functions:
+```javascript
+// Counter.tsx
+--------------
+  import { useAppSelector, useAppDispatch } from 'redux/hooks'
+  import { decrement, increment } from 'redux/features/counterSlice'
+
+  export function Counter() {
+  // The `state` arg is correctly typed as `RootState` already
+  const count = useAppSelector((state) => state.counter.value);
+  const dispatch = useAppDispatch();
+
+  <button onClick = {dispatch(increment)}>increment</button>
+  <button onClick = {dispatch(decrement)}>decrement</button>
+}
+```
+
+# RTK-QUERY:
+## Create an API service:
+```javascript
+// redux/services/pokemon.ts
+----------------------------
+  import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+  import type { Pokemon } from './types'
+
+  export const pokemonApi = createApi({
+    reducerPath: 'pokemonApi',
+    baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+    tagTypes: ['POKEMON', 'POST'],
+    endpoints: (builder) => ({
+      getPokemonByName: builder.query<Pokemon, string>({
+        query: (name) => `pokemon/${name}`,
+        providesTags: ['POKEMON'], // memory that if need to refetch
+      }),
+
+      setPost: builder.mutation({
+      query: (post) => ({
+        url: '/posts',
+        method: 'POST',
+        body: post,
+        invalidatesTags: ['POKEMON'], // after mutation then refetch data named providesTags: ['POKEMON']
+      }),
+    }),
+  })
+
+  // auto-generated based on the defined endpoints
+  export const { useGetPokemonByNameQuery, useSetPostMutation } = pokemonApi
+
+// optional [ if need to refetch data for individual fields ]
+  ...
+     providesTags: (result, error, arg) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'POKEMON', id })), 'POKEMON']
+          : ['POKEMON'],
+    }),
+  ...
+
+  ...
+     invalidatesTags: (result, error, arg) => [{ type: 'POKEMON', id: arg.id }],
+  ...
+```
+
+## setup store:
+```javascript
+// redux/store.ts
+-----------------
+  import { confiimport { configureStore } from '@reduxjs/toolkit'// Or from '@reduxjs/toolkit/query/react'
+  import { setupListeners } from '@reduxjs/toolkit/query'
+  import { pokemonApi } from './services/pokemon'
+
+  export const store = configureStore({
+    reducer: {
+      // Add the generated reducer as a specific top-level slice
+      [pokemonApi.reducerPath]: pokemonApi.reducer,
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(pokemonApi.middleware),
+  })
+
+  // optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+  // see `setupListeners` docs - takes an optional callback as the 2nd arg for customization
+  setupListeners(store.dispatch)
+```
+
+## Wrap your application [ Provider ]:
+```javascript
+// src/main.tsx
+-----------------
+  import { Provider } from 'react-redux'
+
+  import App from './App'
+  import { store } from './store'
+
+  <Provider store={store}>
+    <App />
+  </Provider>
+```
+
+## Use the query:
+```javascript
+// src/Random.tsx
+-----------------
+  import { useGetPokemonByNameQuery } from 'redux/services/pokemon';
+
+   // Using a query hook automatically fetches data and returns query values
+  const { data, error, isLoading } = useGetPokemonByNameQuery('bulbasaur');
+  console.log(data)
+```
 
 <!-- ## api end points:
 ```javascript
