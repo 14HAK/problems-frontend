@@ -312,7 +312,7 @@
   const RedirectDemo = () => {
     const shouldRedirect = true;
     if (shouldRedirect) {
-      return <Navigate to="/dashboard" />;
+      return <Navigate to="/dashboard" replace = {true} />; 
     }
     return <h3>No Redirect</h3>;
   };
@@ -535,6 +535,9 @@
 # RTK-QUERY:
 ## Create an API service:
 ```javascript
+// in Backend cors() setup.
+app.use(cors({ origin: ['http://localhost:5137'], credentials: true }));
+
 // redux/services/pokemon.ts
 ----------------------------
   import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
@@ -543,6 +546,7 @@
   export const pokemonApi = createApi({
     reducerPath: 'pokemonApi',
     baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+    credentials: 'include', // get all cookie access.
     tagTypes: ['POKEMON', 'POST'],
     endpoints: (builder) => ({
       getPokemonByName: builder.query<Pokemon, string>({
