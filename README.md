@@ -41,6 +41,13 @@
 ------
   npm run dev
 ```
+# Install Shadcn UI:
+[ShadCn Component Library](https://ui.shadcn.com/docs/installation)
+```js
+[Link](https://ui.shadcn.com/docs/installation)
+```
+
+
 # Basic React::
 ## React Functional Component:
 ```javascript
@@ -635,3 +642,20 @@ app.use(cors({ origin: ['http://localhost:5137'], credentials: true }));
 app
   .use('/api', router)..;
 ``` -->
+
+<!-- <details>
+  <summary>Click me</summary>
+
+  ### Heading
+  1. Foo
+  2. Bar
+     * Baz
+     * Qux
+
+  ### Some Javascript
+  ```js
+  function logSomething(something) {
+    console.log('Something', something);
+  }
+  ```
+</details> -->
