@@ -1,6 +1,7 @@
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css';
+import { Button } from '@/components/ui/button';
 // import UnionTypeComponent from './components/UnionTypeComponent';
 // import UseRefComponent from './components/useRefComponent';
 // import FormEventHandlers from './components/FormEventHandlers';
@@ -26,6 +27,7 @@ function App(): JSX.Element {
       {/* <FormEventHandlers /> */}
       {/* <UseRefComponent /> */}
       {/* <UnionTypeComponent person={{ role: 'user', userName: 'satosi' }} /> */}
+      <Button className='bg-green-800 text-3xl'>click me</Button>
     </div>
   );
 }
