@@ -9,7 +9,10 @@
 
   npm install react-router-dom //react router dom
 
-  npm install @reduxjs/toolkit react-redux //redux toolkit & RTK query
+  npm install redux //redux toolkit & RTK query
+  npm install react-redux
+  npm install @reduxjs/toolkit
+  npm install redux-persist
 
 // tailwind.config.js
 ---------------------
