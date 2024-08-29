@@ -651,7 +651,7 @@ app.use(cors({ origin: ['http://localhost:5137'], credentials: true }));
 
 ## baseApi setup:
 ```javascript
-// api.ts:
+// api.ts or baseApi.ts:
 ----------
   import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
   import type { RootState } from './store';
