@@ -634,14 +634,319 @@ app.use(cors({ origin: ['http://localhost:5137'], credentials: true }));
   console.log(data)
 ```
 
-<!-- ## api end points:
+# Redux-Toolkit [Advanced]::
+## Folder Structure:
 ```javascript
+    src/
+    ├── store.ts
+    ├── hooks.ts
+    ├── api/
+    │   ├── baseApi.ts
+    │
+    ├── features/
+    │   ├── auth/
+    │       ├── authApi.ts //inject Api.
+    │       ├── authSlice.ts
+  ```
 
-// use enum in main interface
------------------------------
-app
-  .use('/api', router)..;
-``` -->
+## baseApi setup:
+```javascript
+// api.ts:
+----------
+  import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+  import type { RootState } from './store';
+
+  //Define a custom base query with token management (from previous explanation)
+  const baseQuery = fetchBaseQuery({
+    baseUrl: '/api', // Replace with your actual API base URL
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token; // Replace with actual token management logic
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  });
+
+  //A custom base query is created by defining a function that makes HTTP requests and processes responses. We'll use this to add authorization headers and handle token refreshing.
+  const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) => {
+    let result = await baseQuery(args, api, extraOptions);
+
+    if (result.error && result.error.status === 401) {
+      //Unauthorized, try to refresh the token
+      const refreshResult = await baseQuery('/auth/refresh', api, extraOptions);
+
+      if (refreshResult.data) {
+        //Store the new token
+        api.dispatch(setCredentials({ token: refreshResult.data.accessToken }));
+
+        //Retry the original query with the new token
+        result = await baseQuery(args, api, extraOptions);
+      } else {
+        //Refresh failed, redirect to login
+        api.dispatch(logout());
+      }
+    }
+    return result;
+  };
+
+  //Create API slice using the custom base query
+  const api = createApi({
+    reducerPath: 'api',
+    baseQuery: baseQueryWithReauth,
+    credentials: 'include', //get all cookie access.
+    tagTypes: ['DEMO1', 'DEMO2'],
+    endpoints: (builder) => ({
+      getProducts: builder.query<CartItem[], void>({
+        query: () => '/products',  //Fetch list of products
+        providesTags: ['DEMO1'], //its define that DEMO1 his her identity cash data name.
+      }),
+      addCartItem: builder.mutation<CartItem, Partial<CartItem>>({
+        query: (item) => ({
+          url: '/cart',
+          method: 'POST',
+          body: item,
+          invalidatesTags: ['DEMO1'], //after mutation then refetch data named providesTags: ['DEMO1']
+        }),
+      }),
+    }),
+  });
+
+  export const { useGetProductsQuery, useAddCartItemMutation } = api;
+  export default api;
+```
+
+## setup injected endPoints setup:
+```javascript
+// injectEndpoints:
+// userApi.ts:
+-----------------
+  import api from './api'; //Import the base API slice created earlier
+
+  //Dynamically inject endpoints into the existing API slice
+  const extendedApi = api.injectEndpoints({
+    endpoints: (builder) => ({
+      getUser: builder.query<User, number>({
+        query: (id) => `user/${id}`,
+      }),
+      updateUser: builder.mutation<User, Partial<User>>({
+        query: (user) => ({
+          url: `user/${user.id}`,
+          method: 'PUT',
+          body: user,
+        }),
+      }),
+    }),
+    overrideExisting: false, //Set to false to avoid overriding any existing endpoints
+  });
+
+  //Export hooks for the injected endpoints
+  export const { useGetUserQuery, useUpdateUserMutation } = extendedApi;
+  
+```
+## slice setup:
+```javascript
+// cartSlice.ts:
+----------------
+  import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+  interface CartItem {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }
+
+  interface CartState {
+    items: CartItem[];
+  }
+
+  const initialState: CartState = {
+    items: [],
+  };
+
+  const cartSlice = createSlice({
+    name: 'cart',
+    initialState,
+    reducers: {
+      addItem: (state, action: PayloadAction<CartItem>) => {
+        const existingItem = state.items.find(item => item.id === action.payload.id);
+        if (existingItem) {
+          existingItem.quantity += action.payload.quantity;
+        } else {
+          state.items.push(action.payload);
+        }
+      },
+      removeItem: (state, action: PayloadAction<number>) => {
+        state.items = state.items.filter(item => item.id !== action.payload);
+      },
+      clearCart: (state) => {
+        state.items = [];
+      },
+    },
+  });
+
+  export const { addItem, removeItem, clearCart } = cartSlice.actions;
+  export const cartItemsByDefault = (state: RootState) => state.items; // state data separate export
+  export default cartSlice.reducer; 
+```
+## store setup:
+```javascript
+// store.ts:
+------------
+  import { configureStore } from '@reduxjs/toolkit';
+  import { setupListeners } from '@reduxjs/toolkit/query';
+  import { api } from './api'; // Assuming this is your RTK Query API slice
+  import cartReducer from './features/cartSlice'; // Demo cart slice
+
+  //Create the Redux store and add the RTK Query middleware
+  const store = configureStore({
+    reducer: {
+      [api.reducerPath]: api.reducer,  // RTK Query API reducer
+      cart: cartReducer, // Demo cart slice reducer
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(api.middleware),
+  });
+
+  //Setup listeners for refetching on focus or reconnect
+  setupListeners(store.dispatch);
+
+  //Define RootState and AppDispatch types
+  export type RootState = ReturnType<typeof store.getState>;
+  export type AppDispatch = typeof store.dispatch;
+  export default store;
+```
+
+## setup redux types Hooks:
+```javascript
+// hooks.ts:
+------------
+  import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+  import type { RootState, AppDispatch } from './store';
+
+  //Use throughout your app instead of plain `useDispatch` and `useSelector`
+  export const useAppDispatch = () => useDispatch<AppDispatch>();
+  export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+## main.tsx, connect redux with react frontEnd:
+```javascript
+// main.tsx:
+------------
+  import React from 'react';
+  import ReactDOM from 'react-dom/client';
+  import { Provider } from 'react-redux';
+  import { PersistGate } from 'redux-persist/integration/react';
+  import App from './App';
+  import { store, persistor } from './store';
+  import './index.css';
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
+    </Provider>
+  );
+```
+
+## title:
+```javascript
+// ProductList.tsx:
+-------------------
+  import React from 'react';
+  import { useGetProductsQuery, useAddCartItemMutation } from './api';
+  import { useAppDispatch } from './hooks';
+  import { addItem } from './features/cartSlice';
+
+  const ProductList: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const { data: products, error, isLoading } = useGetProductsQuery();
+    const [addCartItem] = useAddCartItemMutation();
+
+    const handleAddToCart = async (product: any) => {
+      try {
+        //Add item to local Redux state
+        dispatch(addItem({ id: product.id, name: product.name, quantity: 1, price: product.price }));
+
+        //Send the updated cart item to the server
+        await addCartItem({ id: product.id, name: product.name, quantity: 1, price: product.price }).unwrap();
+        console.log('Item added to cart successfully');
+      } catch (error) {
+        console.error('Failed to add item to cart', error);
+      }
+    };
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    return (
+      <div>
+        <h2>Product List</h2>
+        <ul>
+          {products?.map(product => (
+            <li key={product.id}>
+              {product.name} - ${product.price}
+              <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  export default ProductList;
+```
+
+
+## title:
+```javascript
+// UserDetails.tsx:
+-------------------
+  import React from 'react';
+  import { useGetUserQuery, useUpdateUserMutation } from './userApi';
+
+  const UserDetails: React.FC<{ userId: number }> = ({ userId }) => {
+    const { data: user, error, isLoading } = useGetUserQuery(userId);
+    const [updateUser] = useUpdateUserMutation();
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    const handleUpdateUser = () => {
+      updateUser({ id: userId, name: 'Updated Name' });
+    };
+
+    return (
+      <div>
+        {user ? (
+          <div>
+            <h2>{user.name}</h2>
+            <button onClick={handleUpdateUser}>Update User</button>
+          </div>
+        ) : (
+          <p>User not found</p>
+        )}
+      </div>
+    );
+  };
+
+  export default UserDetails; 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- <details>
   <summary>Click me</summary>
