@@ -127,6 +127,38 @@
   
   <p>Elapsed Time: {seconds} seconds</p>
 
+// useCallback()
+---------------
+// useCallback is a React Hook that lets you cache a function definition between re-renders:
+import { useCallback } from 'react';
+
+export default function ProductPage({ productId, referrer, theme }) {
+	const handleSubmit = useCallback(
+		(orderDetails) => {
+			post('/product/' + productId + '/buy', {
+				referrer,
+				orderDetails,
+			});
+		},
+		[productId, referrer],
+	);
+
+	const handleButtonClick = () => {
+		const orderDetails = {
+			quantity: 1,
+			giftWrap: false,
+		};
+		handleSubmit(orderDetails); // Call with actual data
+	};
+
+	return (
+		<div>
+			<h1>Product {productId}</h1>
+			<button onClick={handleButtonClick}>Buy Now</button>
+		</div>
+	);
+}
+
 // useContext()
 ---------------
 // outside MyContext.tsx
